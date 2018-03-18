@@ -5,14 +5,14 @@
 
 #include <vtkActor.h>
 #include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkDataSetMapper.h>
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkPointData.h>
-#include <vtkPolyData.h>
-#include <vtkPolyDataMapper.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
 #include <vtkSmartPointer.h>
+#include <vtkXMLDataSetWriter.h>
 
 //------------------------------------------------------------------------------
 
@@ -27,11 +27,6 @@ DisplayWindow::DisplayWindow(QWidget *parent) : QWidget(parent)
    m_vtkWidget = new QVTKOpenGLWidget();
    m_vtkWidget->SetRenderWindow(m_renderWindow);
 
-   // it seems this is not required for QVTKOpenGLWidget.
-//   m_windowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-//   m_windowInteractor->SetRenderWindow(m_renderWindow);
-//   m_windowInteractor->Start();
-
    QVBoxLayout* layout = new QVBoxLayout(this);
    setLayout(layout);
 
@@ -40,12 +35,18 @@ DisplayWindow::DisplayWindow(QWidget *parent) : QWidget(parent)
 
 //------------------------------------------------------------------------------
 
-void DisplayWindow::setDataSet( vtkSmartPointer<vtkPolyData> data )
+void DisplayWindow::setDataSet( vtkSmartPointer<vtkDataSet> data )
 {
-   data->GetCellData()->Initialize();
-   data->GetPointData()->Initialize();
-   auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-   mapper->SetInputData(data);
+   m_dataSet = data;
+
+   // remove data if there is anything
+   m_dataSet->GetCellData()->Initialize();
+   m_dataSet->GetPointData()->Initialize();
+
+   // build rendering chain
+   // data->mapper->actor->renderer
+   auto mapper = vtkSmartPointer<vtkDataSetMapper>::New();
+   mapper->SetInputData(m_dataSet);
 
    auto actor = vtkSmartPointer<vtkActor>::New();
    actor->SetMapper(mapper);
@@ -53,3 +54,15 @@ void DisplayWindow::setDataSet( vtkSmartPointer<vtkPolyData> data )
    m_renderer->AddActor(actor);
    m_renderer->ResetCamera();
 }
+
+//------------------------------------------------------------------------------
+
+void DisplayWindow::saveDataSet(QString& filename)
+{
+   auto writer = vtkXMLDataSetWriter::New();
+   writer->SetInputData(m_dataSet);
+   filename += ".vtp";
+   writer->SetFileName(filename.toLatin1());
+   writer->Write();
+}
+

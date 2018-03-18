@@ -26,16 +26,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         MainWindow.cpp \
-    DisplayWindow.cpp
+    DisplayWindow.cpp \
+    FileLoader.cpp
 
 HEADERS += \
         MainWindow.h \
-    DisplayWindow.h
+    DisplayWindow.h \
+    FileLoader.h
 
 FORMS += \
         MainWindow.ui
 
-LIBS += -L$$PWD/../../vtk-install/lib/ \
+LIBS += -L$$PWD/../../vtk810-install/lib/ \
   -lvtkalglib-8.1 \
   -lvtkCommonColor-8.1\
   -lvtkCommonComputationalGeometry-8.1 \
@@ -59,9 +61,12 @@ LIBS += -L$$PWD/../../vtk-install/lib/ \
   -lvtkImagingFourier-8.1 \
   -lvtkInteractionStyle-8.1 \
   -lvtkIOCore-8.1 \
+  -lvtkexpat-8.1 \
   -lvtkIOGeometry-8.1 \
   -lvtkIOLegacy-8.1 \
   -lvtkIOPLY-8.1 \
+  -lvtkIOXML-8.1 \
+  -lvtkIOXMLParser-8.1 \
   -lvtklz4-8.1 \
   -lvtkRenderingCore-8.1 \
   -lvtkRenderingOpenGL2-8.1 \
@@ -69,5 +74,6 @@ LIBS += -L$$PWD/../../vtk-install/lib/ \
   -lvtkzlib-8.1 \
 
 
-INCLUDEPATH += $$PWD/../../vtk-install/include/vtk-8.1
-DEPENDPATH += $$PWD/../../vtk-install/include/vtk-8.1
+INCLUDEPATH += $$PWD/../../vtk810-install/include/vtk-8.1
+DEPENDPATH += $$PWD/../../vtk810-install/include/vtk-8.1
+

@@ -10,7 +10,7 @@ class QVTKOpenGLWidget;
 class vtkRenderer;
 class vtkRenderWindow;
 class vtkRenderWindowInteractor;
-class vtkPolyData;
+class vtkDataSet;
 
 //------------------------------------------------------------------------------
 
@@ -20,7 +20,8 @@ class DisplayWindow : public QWidget
 public:
    explicit DisplayWindow(QWidget *parent = nullptr);
 
-   void setDataSet(vtkSmartPointer<vtkPolyData> data);
+   void setDataSet(vtkSmartPointer<vtkDataSet> data);
+   void saveDataSet(QString& filename);
 signals:
 
 public slots:
@@ -30,6 +31,7 @@ private:
    vtkSmartPointer<vtkRenderer> m_renderer;
    vtkSmartPointer<vtkRenderWindow> m_renderWindow;
    vtkSmartPointer<vtkRenderWindowInteractor> m_windowInteractor;
+   vtkSmartPointer<vtkDataSet> m_dataSet;
 };
 
 //------------------------------------------------------------------------------

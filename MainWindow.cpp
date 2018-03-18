@@ -1,13 +1,13 @@
 #include "MainWindow.h"
 #include "DisplayWindow.h"
 #include "ui_MainWindow.h"
+#include "FileLoader.h"
 
 #include <QAction>
 #include <QFileDialog>
 
-#include <vtkPLYReader.h>
-#include <vtkOBJReader.h>
 #include <vtkSmartPointer.h>
+#include <vtkDataSet.h>
 
 //------------------------------------------------------------------------------
 
@@ -34,18 +34,22 @@ void MainWindow::createActions()
    QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
 //   QToolBar* fileToolbar = addToolBar("File");
 
-   // setup an action
+   // setup an open action
    QAction* openAction = fileMenu->addAction("&Open");
    openAction->setShortcut(QKeySequence::Open);
    openAction->setToolTip(tr("Open a file"));
    connect( openAction, &QAction::triggered,
             this,       &MainWindow::open);
-//   fileToolbar->addAction(openAction);
+
+   // save action
+   QAction* saveAction = fileMenu->addAction("&Save", this, &MainWindow::save);
+   saveAction->setShortcut(QKeySequence::SaveAs);
+   saveAction->setToolTip(tr("Save file as ..."));
 
    fileMenu->addSeparator();
 
    // setup other action
-   QAction* quitAction = fileMenu->addAction(tr("&Quit"), this, &QMainWindow::close) ;
+   QAction* quitAction = fileMenu->addAction(tr("&Quit"), this, &MainWindow::close) ;
    quitAction->setShortcut(QKeySequence::Quit);
    quitAction->setToolTip("Quit application");
 
@@ -59,30 +63,30 @@ void MainWindow::createActions()
 
 void MainWindow::open()
 {
-   QStringList filenames = QFileDialog::getOpenFileNames(this);
-   for( const QFileInfo& fileInfo : filenames )
+   QStringList filenames = QFileDialog::getOpenFileNames(
+            this, QString(), QString(), FileLoader::supportedFormats());
+
+   for( const QString& filename : filenames )
    {
-      vtkSmartPointer<vtkAbstractPolyDataReader> reader;
-      if( !fileInfo.completeSuffix().compare("PLY", Qt::CaseInsensitive))
+      vtkSmartPointer<vtkDataSet> data;
+
+      FileLoader loader;
+      if( loader.load(filename) && (data = loader.getOutput()) )
       {
-         reader = vtkSmartPointer<vtkPLYReader>::New();
+         // FIX: display are not released when opening a new structure
+         m_display = new DisplayWindow(this);
+         setCentralWidget(m_display);
+
+         m_display->setDataSet(data);
       }
-      else if( !fileInfo.completeSuffix().compare("OBJ", Qt::CaseInsensitive))
-      {
-         reader = vtkSmartPointer<vtkOBJReader>::New();
-      }
-
-      reader->SetFileName(qPrintable(fileInfo.absoluteFilePath()));
-      reader->Update();
-
-      vtkSmartPointer<vtkPolyData> data = reader->GetOutput();
-      data->PrintSelf(std::cout,vtkIndent(0));
-
-      DisplayWindow* display = new DisplayWindow(this);
-      setCentralWidget(display);
-
-      display->setDataSet(data);
-
    }
+}
+
+//------------------------------------------------------------------------------
+
+void MainWindow::save()
+{
+   QString filename = QFileDialog::getSaveFileName(this);
+   m_display->saveDataSet(filename);
 }
 
