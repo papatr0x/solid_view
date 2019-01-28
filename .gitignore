@@ -1,0 +1,9 @@
+# ignore build files
+*.o
+*.ply
+Makefile
+.qmake.stash
+
+# skip generated qt files
+moc_*
+ui_*.h
